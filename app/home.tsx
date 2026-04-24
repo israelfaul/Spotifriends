@@ -1,12 +1,13 @@
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import { calculateCompatibility } from "../lib/compatibility";
 import { supabase } from "../lib/supabase";
@@ -250,12 +251,10 @@ export default function HomeScreen() {
   };
 
   const handleNextProfile = () => {
-    if (currentIndex < profiles.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setPhotoIndex(0);
-      setSelectedSongIndex(null);
-    }
-  };
+    setCurrentIndex((prev) => prev + 1);
+    setPhotoIndex(0);
+    setSelectedSongIndex(null);
+};
 
   const getCompatibilityColor = (score: number) => {
     if (score >= 90) return "#A855F7";
@@ -273,12 +272,34 @@ export default function HomeScreen() {
   }
 
   if (!currentProfile) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.emptyText}>No compatible profiles available yet.</Text>
+  return (
+  <View style={styles.container}>
+    {currentProfile ? (
+      <>
+        {/* all your normal profile card UI goes here */}
+      </>
+    ) : (
+      <View style={styles.emptyContent}>
+        <Text style={styles.emptyText}>You have run out of profiles.</Text>
       </View>
-    );
-  }
+    )}
+
+    <View style={styles.bottomNav}>
+      <Pressable style={styles.navItem}>
+        <Text style={styles.navItemActive}>Spot</Text>
+      </Pressable>
+
+      <Pressable style={styles.navItem}>
+        <Text style={styles.navItemText}>Matches</Text>
+      </Pressable>
+
+      <Pressable style={styles.navItem} onPress={() => router.push("/profile")}>
+        <Text style={styles.navItemText}>Profile</Text>
+      </Pressable>
+    </View>
+  </View>
+);
+}
 
   const selectedSong =
     selectedSongIndex !== null ? currentProfile.songs[selectedSongIndex] : null;
@@ -404,7 +425,7 @@ export default function HomeScreen() {
           <Text style={styles.navItemText}>Matches</Text>
         </Pressable>
 
-        <Pressable style={styles.navItem}>
+        <Pressable style={styles.navItem} onPress={() => router.push("/profile")}>
           <Text style={styles.navItemText}>Profile</Text>
         </Pressable>
       </View>
@@ -420,6 +441,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
+
+  emptyContent: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+},
 
   emptyText: {
     color: "#F2F2F7",

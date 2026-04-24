@@ -28,6 +28,7 @@ type SelectedSong = {
 };
 
 const EMPTY_TOP5: (SelectedSong | null)[] = [null, null, null, null, null];
+const params = useLocalSearchParams();
 
 export default function SongListScreen() {
   const insets = useSafeAreaInsets();
@@ -117,12 +118,28 @@ export default function SongListScreen() {
         coverUrl: song.cover_url ?? "",
       };
 
-      router.replace({
-        pathname: "/top5",
-        params: {
-          top5: JSON.stringify(nextTop5),
-        },
-      });
+      if (params.mode === "profile") {
+  // Save directly to DB
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  await supabase.from("user_top_songs").upsert({
+    user_id: user.id,
+    song_id: song.id,
+    position: safeSlotIndex + 1,
+  });
+
+  router.back();
+} else {
+  // onboarding (keep your existing behavior)
+  router.replace({
+    pathname: "/top5",
+    params: {
+      top5: JSON.stringify(nextTop5),
+    },
+  });
+}
     } catch (error) {
       console.log("Song selection error:", error);
       setErrorMessage("We couldn’t select that song. Please try again.");
