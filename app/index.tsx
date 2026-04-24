@@ -1,9 +1,15 @@
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+
 
 export default function WelcomeScreen() {
   const [isNavigating, setIsNavigating] = useState(false);
+  useFocusEffect(
+  useCallback(() => {
+    setIsNavigating(false);
+  }, [])
+);
 
   const goTo = (path: "/login" | "/signup") => {
     if (isNavigating) return;

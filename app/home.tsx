@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -8,6 +9,17 @@ import {
   Text,
   useWindowDimensions,
   View,
+=======
+import { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
+>>>>>>> 49697232b59bd26e28b2a40500dd154f6fb4eab9
 } from "react-native";
 import { calculateCompatibility } from "../lib/compatibility";
 import { supabase } from "../lib/supabase";
@@ -251,10 +263,19 @@ export default function HomeScreen() {
   };
 
   const handleNextProfile = () => {
+<<<<<<< HEAD
     setCurrentIndex((prev) => prev + 1);
     setPhotoIndex(0);
     setSelectedSongIndex(null);
 };
+=======
+    if (currentIndex < profiles.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      setPhotoIndex(0);
+      setSelectedSongIndex(null);
+    }
+  };
+>>>>>>> 49697232b59bd26e28b2a40500dd154f6fb4eab9
 
   const getCompatibilityColor = (score: number) => {
     if (score >= 90) return "#A855F7";
@@ -272,6 +293,7 @@ export default function HomeScreen() {
   }
 
   if (!currentProfile) {
+<<<<<<< HEAD
   return (
   <View style={styles.container}>
     {currentProfile ? (
@@ -300,6 +322,14 @@ export default function HomeScreen() {
   </View>
 );
 }
+=======
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.emptyText}>No compatible profiles available yet.</Text>
+      </View>
+    );
+  }
+>>>>>>> 49697232b59bd26e28b2a40500dd154f6fb4eab9
 
   const selectedSong =
     selectedSongIndex !== null ? currentProfile.songs[selectedSongIndex] : null;
@@ -425,7 +455,11 @@ export default function HomeScreen() {
           <Text style={styles.navItemText}>Matches</Text>
         </Pressable>
 
+<<<<<<< HEAD
         <Pressable style={styles.navItem} onPress={() => router.push("/profile")}>
+=======
+        <Pressable style={styles.navItem}>
+>>>>>>> 49697232b59bd26e28b2a40500dd154f6fb4eab9
           <Text style={styles.navItemText}>Profile</Text>
         </Pressable>
       </View>
@@ -442,12 +476,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 
+<<<<<<< HEAD
   emptyContent: {
   flex: 1,
   alignItems: "center",
   justifyContent: "center",
 },
 
+=======
+>>>>>>> 49697232b59bd26e28b2a40500dd154f6fb4eab9
   emptyText: {
     color: "#F2F2F7",
     fontSize: 18,

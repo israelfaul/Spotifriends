@@ -13,17 +13,35 @@ import {
 } from "react-native";
 import { supabase } from "../lib/supabase";
 
+const isValidEmail = (value: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+};
+
 export default function SignupScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const shakeAnim = useRef(new Animated.Value(0)).current;
+  
+  const cleanEmail = email.trim();
+
+  const emailHasError =
+    emailTouched &&
+    cleanEmail.length > 0 &&
+    !isValidEmail(cleanEmail);
+
+  const passwordHasError =
+    passwordTouched &&
+    password.length > 0 &&
+    password.length < 6;
 
   const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && password.length >= 6 && !loading;
-  }, [email, password, loading]);
+    return isValidEmail(cleanEmail) && password.length >= 6 && !loading;
+  }, [cleanEmail, password, loading]);
 
   const triggerShake = () => {
     Animated.sequence([
@@ -58,6 +76,22 @@ export default function SignupScreen() {
   const onSignup = async () => {
     const cleanEmail = email.trim();
     setErrorMessage("");
+    
+    setEmailTouched(true);
+    setPasswordTouched(true);
+
+    if (!isValidEmail(cleanEmail)) {
+      setErrorMessage("Please enter a valid email address.");
+      triggerShake();
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters.");
+      triggerShake();
+      return;
+    }
+
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
@@ -68,19 +102,15 @@ export default function SignupScreen() {
     setLoading(false);
 
     if (error) {
-      console.log("Signup error:", error.message);
-
-      if (error.message.toLowerCase().includes("already registered")) {
+      if (error.message.toLowerCase().includes("already")) {
         setErrorMessage("An account with this email already exists.");
-      } else if (error.message.toLowerCase().includes("invalid email")) {
-        setErrorMessage("Please enter a valid email address.");
       } else {
-        setErrorMessage(error.message);
+        setErrorMessage("Something went wrong. Please try again.");
       }
-
       triggerShake();
       return;
     }
+
 
     console.log("Signup success:", data.user?.id);
     router.replace("/name");
@@ -112,6 +142,7 @@ export default function SignupScreen() {
                 setEmail(text);
                 if (errorMessage) setErrorMessage("");
               }}
+              onBlur={() => setEmailTouched(true)}
               placeholder="you@example.com"
               placeholderTextColor="#6B6B7A"
               autoCapitalize="none"
@@ -129,12 +160,23 @@ export default function SignupScreen() {
                 setPassword(text);
                 if (errorMessage) setErrorMessage("");
               }}
+              onBlur={() => setPasswordTouched(true)}
               placeholder="At least 6 characters"
               placeholderTextColor="#6B6B7A"
               secureTextEntry
               editable={!loading}
               style={[styles.input, errorMessage ? styles.inputError : null]}
             />
+            {emailHasError ? (
+              <Text style={styles.errorText}>
+                Enter a valid email address.
+              </Text>
+            ) : null}
+            {passwordHasError ? (
+              <Text style={styles.errorText}>
+                Password must be at least 6 characters.
+              </Text>
+            ) : null}
           </View>
 
           {errorMessage ? (
