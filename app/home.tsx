@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
 import { calculateCompatibility } from "../lib/compatibility";
 import { supabase } from "../lib/supabase";
 
@@ -26,6 +27,7 @@ type CandidateProfile = {
   photos: string[];
   songs: CandidateSong[];
   compatibility: number;
+  sharedSubgenres: string[];
 };
 
 export default function HomeScreen() {
@@ -40,7 +42,9 @@ export default function HomeScreen() {
   const imageSize = width - 48;
 
   useEffect(() => {
-    const fetchSongsWithSubgenres = async (userId: string): Promise<CandidateSong[]> => {
+    const fetchSongsWithSubgenres = async (
+      userId: string
+    ): Promise<CandidateSong[]> => {
       const { data: top5Rows, error: top5Error } = await supabase
         .from("user_top5")
         .select("position, song_id")
@@ -72,7 +76,9 @@ export default function HomeScreen() {
         throw new Error(linkError.message);
       }
 
-      const subgenreIds = [...new Set((linkRows ?? []).map((row) => row.subgenre_id))];
+      const subgenreIds = [
+        ...new Set((linkRows ?? []).map((row) => row.subgenre_id)),
+      ];
 
       let subgenreMap = new Map<string, string>();
 
@@ -136,15 +142,6 @@ export default function HomeScreen() {
 
         const currentUserSongs = await fetchSongsWithSubgenres(user.id);
 
-        console.log(
-          "Current user Top 5:",
-          currentUserSongs.map((song) => ({
-            title: song.title,
-            artist: song.artist,
-            subgenres: song.subgenres,
-          }))
-        );
-
         const { data: otherProfiles, error: profileError } = await supabase
           .from("profiles")
           .select("id, display_name")
@@ -172,7 +169,10 @@ export default function HomeScreen() {
             .order("position", { ascending: true });
 
           if (photoError) {
-            console.log(`Photo fetch error for ${candidate.display_name}:`, photoError.message);
+            console.log(
+              `Photo fetch error for ${candidate.display_name}:`,
+              photoError.message
+            );
             continue;
           }
 
@@ -187,16 +187,6 @@ export default function HomeScreen() {
 
           const candidateSongs = await fetchSongsWithSubgenres(candidate.id);
 
-          console.log(
-            `Candidate Top 5 (${candidate.display_name}):`,
-            candidateSongs.map((song) => ({
-              title: song.title,
-              artist: song.artist,
-              subgenres: song.subgenres,
-            }))
-          );
-
-          // Skip incomplete candidate profiles for now
           if (candidateSongs.length < 5 || photoUrls.length === 0) {
             continue;
           }
@@ -206,17 +196,13 @@ export default function HomeScreen() {
             candidateSongs
           );
 
-          console.log(
-            `Compatibility result (${candidate.display_name}):`,
-            compatibilityResult
-          );
-
           builtProfiles.push({
             id: candidate.id,
             name: candidate.display_name,
             photos: photoUrls,
             songs: candidateSongs,
             compatibility: compatibilityResult.score,
+            sharedSubgenres: compatibilityResult.sharedSubgenres,
           });
         }
 
@@ -245,6 +231,7 @@ export default function HomeScreen() {
 
   const handlePreviousPhoto = () => {
     if (!currentProfile || currentProfile.photos.length === 0) return;
+
     setPhotoIndex((prev) =>
       prev === 0 ? currentProfile.photos.length - 1 : prev - 1
     );
@@ -254,7 +241,7 @@ export default function HomeScreen() {
     setCurrentIndex((prev) => prev + 1);
     setPhotoIndex(0);
     setSelectedSongIndex(null);
-};
+  };
 
   const getCompatibilityColor = (score: number) => {
     if (score >= 90) return "#A855F7";
@@ -272,34 +259,31 @@ export default function HomeScreen() {
   }
 
   if (!currentProfile) {
-  return (
-  <View style={styles.container}>
-    {currentProfile ? (
-      <>
-        {/* all your normal profile card UI goes here */}
-      </>
-    ) : (
-      <View style={styles.emptyContent}>
-        <Text style={styles.emptyText}>You have run out of profiles.</Text>
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptyContent}>
+          <Text style={styles.emptyText}>You have run out of profiles.</Text>
+        </View>
+
+        <View style={styles.bottomNav}>
+          <Pressable style={styles.navItem}>
+            <Text style={styles.navItemActive}>Spot</Text>
+          </Pressable>
+
+          <Pressable style={styles.navItem}>
+            <Text style={styles.navItemText}>Matches</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.navItem}
+            onPress={() => router.push("/profile")}
+          >
+            <Text style={styles.navItemText}>Profile</Text>
+          </Pressable>
+        </View>
       </View>
-    )}
-
-    <View style={styles.bottomNav}>
-      <Pressable style={styles.navItem}>
-        <Text style={styles.navItemActive}>Spot</Text>
-      </Pressable>
-
-      <Pressable style={styles.navItem}>
-        <Text style={styles.navItemText}>Matches</Text>
-      </Pressable>
-
-      <Pressable style={styles.navItem} onPress={() => router.push("/profile")}>
-        <Text style={styles.navItemText}>Profile</Text>
-      </Pressable>
-    </View>
-  </View>
-);
-}
+    );
+  }
 
   const selectedSong =
     selectedSongIndex !== null ? currentProfile.songs[selectedSongIndex] : null;
@@ -342,15 +326,31 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.infoBlock}>
-        <Text style={styles.name}>{currentProfile.name}</Text>
-        <Text
-          style={[
-            styles.compatibility,
-            { color: getCompatibilityColor(currentProfile.compatibility) },
-          ]}
-        >
-          {currentProfile.compatibility}% Similarity
-        </Text>
+        <View style={styles.nameAndGenreRow}>
+          <View style={styles.nameBlock}>
+            <Text style={styles.name}>{currentProfile.name}</Text>
+            <Text
+              style={[
+                styles.compatibility,
+                { color: getCompatibilityColor(currentProfile.compatibility) },
+              ]}
+            >
+              {currentProfile.compatibility}% Similarity
+            </Text>
+          </View>
+
+          {currentProfile.sharedSubgenres.length > 0 && (
+            <View style={styles.genreBubbleContainer}>
+              {currentProfile.sharedSubgenres.slice(0, 3).map((genre) => (
+                <View key={genre} style={styles.genreBubble}>
+                  <Text style={styles.genreBubbleText} numberOfLines={1}>
+                    {genre}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
 
       <View style={styles.songRow}>
@@ -425,7 +425,10 @@ export default function HomeScreen() {
           <Text style={styles.navItemText}>Matches</Text>
         </Pressable>
 
-        <Pressable style={styles.navItem} onPress={() => router.push("/profile")}>
+        <Pressable
+          style={styles.navItem}
+          onPress={() => router.push("/profile")}
+        >
           <Text style={styles.navItemText}>Profile</Text>
         </Pressable>
       </View>
@@ -443,10 +446,10 @@ const styles = StyleSheet.create({
   },
 
   emptyContent: {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-},
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   emptyText: {
     color: "#F2F2F7",
@@ -514,6 +517,17 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
+  nameAndGenreRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+
+  nameBlock: {
+    flex: 1,
+  },
+
   name: {
     color: "#F2F2F7",
     fontSize: 33,
@@ -525,6 +539,30 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "300",
     letterSpacing: 1,
+  },
+
+  genreBubbleContainer: {
+    maxWidth: 170,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    gap: 6,
+    paddingTop: 8,
+  },
+
+  genreBubble: {
+    backgroundColor: "#1E1B2E",
+    borderColor: "#8B5CF6",
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+
+  genreBubbleText: {
+    color: "#C4B5FD",
+    fontSize: 12,
+    fontWeight: "700",
   },
 
   songRow: {

@@ -168,7 +168,7 @@ export default function Top5Screen() {
 
       setSaving(false);
       Alert.alert("Success", "Your Top 5 was saved.");
-      router.push("/");
+      router.replace("/home");
     } catch (error) {
       console.log("Unexpected Top 5 save error:", error);
       setErrorMessage("Something went wrong while saving your songs.");

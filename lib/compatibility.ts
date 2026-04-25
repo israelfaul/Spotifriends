@@ -11,6 +11,7 @@ export type CompatibilityResult = {
   exactSongMatches: number;
   artistMatches: number;
   sharedSubgenreCount: number;
+  sharedSubgenres: string[];
   playlistBonusApplied: boolean;
 };
 
@@ -19,8 +20,35 @@ function normalize(value: string): string {
 }
 
 function getSharedSubgenres(a: string[], b: string[]): string[] {
-  const setB = new Set(b.map(normalize));
-  return a.map(normalize).filter((genre) => setB.has(genre));
+  const normalizedB = new Set(b.map(normalize));
+
+  return a.filter((genre) => normalizedB.has(normalize(genre)));
+}
+
+function getPlaylistSharedSubgenres(
+  currentUserSongs: CandidateSong[],
+  candidateSongs: CandidateSong[]
+): string[] {
+  const currentGenres = currentUserSongs.flatMap((song) => song.subgenres);
+  const candidateGenres = candidateSongs.flatMap((song) => song.subgenres);
+
+  const candidateGenreKeys = new Set(candidateGenres.map(normalize));
+  const seen = new Set<string>();
+
+  return currentGenres.filter((genre) => {
+    const key = normalize(genre);
+
+    if (!candidateGenreKeys.has(key)) {
+      return false;
+    }
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
 }
 
 export function calculateCompatibility(
@@ -51,8 +79,7 @@ export function calculateCompatibility(
         continue;
       }
 
-      const sameArtist =
-        normalize(mySong.artist) === normalize(otherSong.artist);
+      const sameArtist = normalize(mySong.artist) === normalize(otherSong.artist);
 
       if (sameArtist) {
         if (20 > bestMatchScore) {
@@ -84,19 +111,18 @@ export function calculateCompatibility(
     }
   }
 
+  const playlistSharedSubgenres = getPlaylistSharedSubgenres(
+    currentUserSongs,
+    candidateSongs
+  );
+
   const playlistBonusApplied =
-    exactSongMatches >= 2 ||
-    artistMatches >= 2 ||
-    sharedSubgenreCount >= 4;
+    exactSongMatches >= 2 || artistMatches >= 2 || sharedSubgenreCount >= 4;
 
   if (playlistBonusApplied) {
     rawScore += 10;
   }
 
-  // Max possible:
-  // 5 songs * 30 = 150
-  // + playlist bonus 10
-  // = 160
   const percentage = Math.round((rawScore / 160) * 100);
 
   return {
@@ -104,6 +130,7 @@ export function calculateCompatibility(
     exactSongMatches,
     artistMatches,
     sharedSubgenreCount,
+    sharedSubgenres: playlistSharedSubgenres,
     playlistBonusApplied,
   };
 }

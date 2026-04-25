@@ -241,6 +241,7 @@ export default function PhotosScreen() {
                       width: tileSize,
                       marginRight: isRightColumn ? 0 : tileSpacing,
                       marginBottom: isLastRow ? 0 : tileSpacing,
+                      marginTop: index === 3 ? 10 : 0,
                     },
                     pressed && !loading && styles.slotWrapperPressed,
                     loading && styles.disabled,
