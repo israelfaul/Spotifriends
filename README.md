@@ -1,55 +1,88 @@
-<<<<<<< HEAD
-# Welcome to your Expo app 👋
+# Spotifriends
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Spotifriends is a music-based social networking application that helps users connect with others who share similar music tastes. Users create a profile, upload photos, and build a curated Top 5 playlist. A compatibility algorithm analyzes playlists to generate recommendations based on shared songs, artists, and genres.
 
-## Get started
+## Features
 
-1. Install dependencies
+* User authentication and account management
+* Profile creation and photo uploads
+* Top 5 playlist selection
+* Compatibility-based profile recommendations
+* Shared genre visualization
+* Dynamic similarity scoring
+* Cloud-based profile and playlist storage
+* Cross-platform mobile support
 
-   ```bash
-   npm install
-   ```
+## Technologies
 
-2. Start the app
+### Frontend
 
-   ```bash
-   npx expo start
-   ```
+* React Native
+* Expo
+* Expo Router
+* TypeScript
 
-In the output, you'll find options to open the app in a
+### Backend
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* Supabase
+* PostgreSQL
+* Supabase Authentication
+* Supabase Storage
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Additional Libraries
 
-## Get a fresh project
+* Expo Image Picker
+* Expo FileSystem
+* Base64 ArrayBuffer
 
-When you're ready, run:
+## How It Works
+
+1. Create an account and log in.
+2. Upload profile photos.
+3. Select your Top 5 songs.
+4. Browse recommended profiles.
+5. View compatibility percentages and shared genres.
+6. Connect with users who share similar music interests.
+
+## Installation
+
+### Prerequisites
+
+* Node.js
+* npm
+* Expo Go (for mobile testing)
+* Supabase project configured
+
+### Setup
+
+Clone the repository:
 
 ```bash
-npm run reset-project
+git clone https://github.com/YOUR_USERNAME/spotifriends.git
+cd spotifriends
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Install dependencies:
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Create a `.env` file and configure your Supabase credentials:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```env
+EXPO_PUBLIC_SUPABASE_URL=your_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_key
+```
 
-## Join the community
+Start the development server:
 
-Join our community of developers creating universal apps.
+```bash
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-=======
-# CPSC-491-Spotifriends
-WIP
->>>>>>> af6a340766c9fc54778d38f4591a47dc38e024b2
+To run using tunnel mode:
+
+```bash
+npx expo start --tunnel
+```
